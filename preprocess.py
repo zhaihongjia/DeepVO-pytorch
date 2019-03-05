@@ -51,7 +51,7 @@ def create_pose_data():
 		fn = '{}{}.txt'.format(par.pose_dir, video)
 		print('Transforming {}...'.format(fn))
 		with open(fn) as f:
-			lines = [line.split('\n')[0] for line in f.readlines()] 
+			lines = [line.split('\n')[0] for line in f.readlines()]
 			poses = [ R_to_angle([float(value) for value in l.split(' ')]) for l in lines]  # list of pose (pose=list of 12 floats)
 			poses = np.array(poses)
 			base_fn = os.path.splitext(fn)[0]
@@ -110,11 +110,18 @@ def calculate_rgb_mean_std(image_path_list, minus_point_5=False):
 if __name__ == '__main__':
 	clean_unused_images()
 	create_pose_data()
-	
+
 	# Calculate RGB means of images in training videos
 	train_video = ['00', '02', '08', '09', '06', '04', '10']
 	image_path_list = []
 	for folder in train_video:
 		image_path_list += glob.glob('KITTI/images/{}/*.png'.format(folder))
+		'''
+		glob可以查找符合特定规则的文件路径名。
+		查找文件只用到三个匹配符：”*”, “?”, “[]”。
+		”*”匹配0个或多个字符；
+		”?”匹配单个字符；
+		”[]”匹配指定范围内的字符，如：[0-9]匹配数字。
+		glob.iglob(r'*')  返回迭代器
+		'''
 	calculate_rgb_mean_std(image_path_list, minus_point_5=True)
-
