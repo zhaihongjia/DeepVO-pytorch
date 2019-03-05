@@ -1,8 +1,8 @@
+'''
+角度，旋转矩阵，欧拉角之间的变换和检查
+'''
 import numpy as np
 import math
-
-
-# 文件里面包含了：各种角度，旋转矩阵，欧拉角之间的变换
 
 # epsilon for testing whether a number is close to zero
 _EPS = np.finfo(float).eps * 4.0

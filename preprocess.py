@@ -1,3 +1,8 @@
+'''
+清楚不用的数据
+计算姿态数据
+计算均值和方差
+'''
 import os
 import glob
 import numpy as np

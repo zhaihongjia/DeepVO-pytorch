@@ -1,9 +1,8 @@
-# %load Dataloader_loss.py
-
-
-# In[ ]:
-
-
+'''
+损失函数定义
+数据集定义
+GroundTruth读取定义
+'''
 from params import par
 from model import DeepVO
 import cv2
@@ -31,19 +30,19 @@ def isRotationMatrix(R) :
     I = np.identity(3, dtype = R.dtype)
     n = np.linalg.norm(I - shouldBeIdentity)
     return n < 1e-6
- 
- 
+
+
 # Calculates rotation matrix to euler angles
 # The result is the same as MATLAB except the order
 # of the euler angles ( x and z are swapped ).
 def rotationMatrixToEulerAngles(R) :
- 
+
     assert(isRotationMatrix(R))
-     
+
     sy = math.sqrt(R[0,0] * R[0,0] +  R[1,0] * R[1,0])
-     
+
     singular = sy < 1e-6
- 
+
     if  not singular :
         x = math.atan2(R[2,1] , R[2,2])
         y = math.atan2(-R[2,0], sy)
@@ -52,7 +51,7 @@ def rotationMatrixToEulerAngles(R) :
         x = math.atan2(-R[1,2], R[1,1])
         y = math.atan2(-R[2,0], sy)
         z = 0
- 
+
     return np.array([x, y, z])
 
 ###############################################################
@@ -61,15 +60,15 @@ def rotationMatrixToEulerAngles(R) :
 
 #only fixed seq_len is used
 class KITTI_Data(Dataset):
-    def __init__(self,folder,seq_len): 
-        
-        #only store images address in dataloader 
+    def __init__(self,folder,seq_len):
+
+        #only store images address in dataloader
         root_train = 'KITTI/images/{}/image_03/data'.format(folder)
         imgs = os.listdir(root_train)
         self.imgs = [os.path.join(root_train,img) for img in imgs]
         self.imgs.sort()
         self.GT = readGT('KITTI/pose_GT/{}.txt'.format(folder))
-        
+
         self.seq_len = seq_len
 
     def __getitem__(self, index):
@@ -80,7 +79,7 @@ class KITTI_Data(Dataset):
         except Exception:
             print("Error:Index OutofRange")
         filenames = []
-        
+
         #load path to images,read image and resemble as RGB
         #NumofImgs = seqs + #StackNum
         filenames = [self.imgs[index+i] for i in range(self.seq_len+1)]
@@ -88,15 +87,15 @@ class KITTI_Data(Dataset):
 
         #resemble images as RGB
         images = [img[:, :, (2, 1, 0)] for img in images]
-        
+
         #Transpose the image that channels num. as first dimension
         images = [np.transpose(img,(2,0,1)) for img in images]
         images = [torch.from_numpy(img) for img in images]
-        
+
         #stack per 2 images
         images = [np.concatenate((images[k],images[k+1]),axis = 0) for k in range(len(images)-1)]
-                
-        
+
+
         #prepare ground truth poses data
 
         #Stack the images for seqs
@@ -118,14 +117,14 @@ def readGT(root):
             gt = np.append(rotationMatrixToEulerAngles(np.matrix([one_line[0:3],one_line[4:7],one_line[8:11]])),np.array([one_line[3],one_line[7],one_line[11]]))
             GT.append(gt)
     return np.array(GT,dtype=np.float32)
-        
+
 ###############################################################
 #Custom Loss Function
 ###############################################################
 
 class DeepvoLoss(loss._Loss):
     def __init__(self, size_average=True, reduce=True):
-        super(DeepvoLoss, self).__init__()    
+        super(DeepvoLoss, self).__init__()
 
     def forward(self, input,target):
         return F.mse_loss(input[0:3], target[0:3], size_average=self.size_average, reduce=self.reduce)+100 * F.mse_loss(input[3:6], target[3:6], size_average=self.size_average, reduce=self.reduce)
