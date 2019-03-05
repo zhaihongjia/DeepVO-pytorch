@@ -1,6 +1,9 @@
 import numpy as np
 import math
 
+
+# 文件里面包含了：各种角度，旋转矩阵，欧拉角之间的变换
+
 # epsilon for testing whether a number is close to zero
 _EPS = np.finfo(float).eps * 4.0
 
@@ -12,17 +15,17 @@ def isRotationMatrix(R) :
 	return n < 1e-6
 
 def R_to_angle(Rt):
-# Ground truth pose is present as [R | t] 
-# R: Rotation Matrix, t: translation vector
-# transform matrix to angles
+  # Ground truth pose is present as [R | t]
+  # R: Rotation Matrix, t: translation vector
+  # transform matrix to angles
 	Rt = np.reshape(np.array(Rt), (3,4))
 	t = Rt[:,-1]
 	R = Rt[:,:3]
 
 	assert(isRotationMatrix(R))
-	
+
 	x, y, z = euler_from_matrix(R)
-	
+
 	theta = [x, y, z]
 	pose_15 = np.concatenate((theta, t, R.flatten()))
 	assert(pose_15.shape == (15,))
@@ -43,19 +46,19 @@ def eulerAnglesToRotationMatrix(theta) :
                     ])
     R = np.dot(R_z, np.dot( R_y, R_x ))
     return R
-	
+
 def euler_from_matrix(matrix):
-    
+
 	# y-x-z Tait–Bryan angles intrincic
 	# the method code is taken from https://github.com/awesomebytes/delta_robot/blob/master/src/transformations.py
-    
+
     i = 2
     j = 0
     k = 1
     repetition = 0
     frame = 1
     parity = 0
-	
+
 
     M = np.array(matrix, dtype=np.float64, copy=False)[:3, :3]
     if repetition:
@@ -84,7 +87,7 @@ def euler_from_matrix(matrix):
     if frame:
         ax, az = az, ax
     return ax, ay, az
-	
+
 def normalize_angle_delta(angle):
     if(angle > np.pi):
         angle = angle - 2 * np.pi
