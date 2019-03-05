@@ -85,6 +85,7 @@ class DeepVO(nn.Module):
                 m.bias.data.zero_()
 
 
+    # CNN-->RNN
     def forward(self, x):
         # x: (batch, seq_len, channel, width, height)
         # stack_image
